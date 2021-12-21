@@ -1,0 +1,34 @@
+setwd("C:\\Users\\Toszam\\Desktop\\WAD R\\Dane")
+zachowania<-read.csv("zachowania.csv", header=TRUE, dec=",", sep=";", na.strings="NA")
+library("dplyr")
+library(psych)
+library("psy")
+
+quantile(table(zachowania$country))       
+zachowaniaZ <- zachowania %>% group_by(country) %>% filter(n() >= 100)
+
+cortest.bartlett(zachowaniaZ[,-21])                                                   
+KMO(zachowaniaZ[,-21])            
+scree.plot(zachowaniaZ[,-21], title ="wykres osypiska", type="R")  
+
+
+model5<-fa(zachowaniaZ[,-21], nfactors=5, rotate="varimax", fm="wls", cor="poly", scores="Anderson")
+model5
+fa.diagram(model5)
+
+
+zachowaniaX <- zachowaniaZ[,-c(11, 8)]
+cortest.bartlett(zachowaniaX[,-19])                                                   
+KMO(zachowaniaX[,-19])            
+scree.plot(zachowaniaX[,-19], title ="wykres osypiska", type="R")
+
+model5<-fa(zachowaniaX[,-19], nfactors=5, rotate="varimax", fm="wls", cor="poly", scores="Anderson")
+model5
+fa.diagram(model5)
+
+czynniki<-data.frame(model5$scores, zachowaniaX$country)
+czynniki
+
+kraj<-aggregate(.~zachowaniaX.country, data=czynniki, FUN="mean")
+with(kraj, plot(WLS3, WLS4, pch=zachowaniaX.country, type="n"))
+with(kraj, text(WLS3, WLS4, labels=zachowaniaX.country, cex=0.5))
